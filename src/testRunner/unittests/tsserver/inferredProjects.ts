@@ -1,4 +1,37 @@
 namespace ts.projectSystem {
+    describe("tsserverProjectSystem general functionality", () => {
+        it("create inferred project", () => {
+            const appFile: File = {
+                path: "/a/b/c/app.ts",
+                content: `
+                import {f} from "./module"
+                console.log(f)
+                `
+            };
+
+            const moduleFile: File = {
+                path: "/a/b/c/module.d.ts",
+                content: `export let x: number`
+            };
+            const host = createServerHost([appFile, moduleFile, libFile]);
+            const projectService = createProjectService(host);
+            const { configFileName } = projectService.openClientFile(appFile.path);
+
+            assert(!configFileName, `should not find config, got: '${configFileName}`);
+            checkNumberOfConfiguredProjects(projectService, 0);
+            checkNumberOfInferredProjects(projectService, 1);
+
+            const project = projectService.inferredProjects[0];
+
+            checkArray("inferred project", project.getFileNames(), [appFile.path, libFile.path, moduleFile.path]);
+            const configFileLocations = ["/a/b/c/", "/a/b/", "/a/", "/"];
+            const configFiles = flatMap(configFileLocations, location => [location + "tsconfig.json", location + "jsconfig.json"]);
+            checkWatchedFiles(host, configFiles.concat(libFile.path, moduleFile.path));
+            checkWatchedDirectories(host, ["/a/b/c"], /*recursive*/ false);
+            checkWatchedDirectories(host, [combinePaths(getDirectoryPath(appFile.path), nodeModulesAtTypes)], /*recursive*/ true);
+        });
+    });
+
     describe("tsserverProjectSystem Inferred projects", () => {
         it("should support files without extensions", () => {
             const f = {

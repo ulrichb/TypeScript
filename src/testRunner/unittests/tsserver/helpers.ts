@@ -15,6 +15,9 @@ namespace ts.projectSystem {
     export import checkWatchedDirectories = TestFSWithWatch.checkWatchedDirectories;
     export import checkWatchedDirectoriesDetailed = TestFSWithWatch.checkWatchedDirectoriesDetailed;
 
+    export import commonFile1 = tscWatch.commonFile1;
+    export import commonFile2 = tscWatch.commonFile2;
+
     const outputEventRegex = /Content\-Length: [\d]+\r\n\r\n/;
     export function mapOutputToJson(s: string) {
         return convertToObject(
